@@ -1,0 +1,21 @@
+# Variables de entorno — nunca subir al repositorio
+.env
+.env.*
+*.env
+
+# Entorno virtual
+.venv/
+venv/
+env/
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Jupyter
+.ipynb_checkpoints/
+
+# OS
+.DS_Store
+Thumbs.db

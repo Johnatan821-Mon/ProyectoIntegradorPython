@@ -1,16 +1,22 @@
-"""Ejecuta ordenadamente la secuencia de código de limpieza y guardado.
-Guarda gráficos en archivos PNG para no requerir interfaz gráfica.
-"""
 
 from __future__ import annotations
 
-import matplotlib
-matplotlib.use("Agg")
-import matplotlib.pyplot as plt
-import seaborn as sns
 import pandas as pd
 
 from pathlib import Path
+
+# Intentar importar herramientas de graficado; si faltan, omitir gráficos pero seguir el flujo
+try:
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    import seaborn as sns
+    PLOTTING_AVAILABLE = True
+except Exception:
+    PLOTTING_AVAILABLE = False
+    plt = None
+    sns = None
+    print("Aviso: matplotlib/seaborn no disponibles — se omiten gráficos.")
 
 BASE_DIR = Path(__file__).resolve().parent
 INPUT = BASE_DIR / "dataset_banco.csv"
@@ -63,19 +69,22 @@ def main() -> None:
     data.drop_duplicates(inplace=True)
     print(f"Tamaño después de eliminar duplicados: {data.shape}")
 
-    # 4.4 Outliers -> graficar boxplots
+    # 4.4 Outliers -> graficar boxplots (si está disponible)
     cols_num = ["age", "balance", "day", "duration", "campaign", "pdays", "previous"]
-    fig, ax = plt.subplots(nrows=len(cols_num), ncols=1, figsize=(8, 5 * len(cols_num)))
-    fig.subplots_adjust(hspace=0.5)
+    if PLOTTING_AVAILABLE:
+        fig, ax = plt.subplots(nrows=len(cols_num), ncols=1, figsize=(8, 5 * len(cols_num)))
+        fig.subplots_adjust(hspace=0.5)
 
-    for i, col in enumerate(cols_num):
-        if col in data.columns:
-            sns.boxplot(x=col, data=data, ax=ax[i])
-            ax[i].set_title(col)
+        for i, col in enumerate(cols_num):
+            if col in data.columns:
+                sns.boxplot(x=col, data=data, ax=ax[i])
+                ax[i].set_title(col)
 
-    fig.savefig(BOXPLOTS_FILE)
-    plt.close(fig)
-    print(f"Boxplots guardados en: {BOXPLOTS_FILE}")
+        fig.savefig(BOXPLOTS_FILE)
+        plt.close(fig)
+        print(f"Boxplots guardados en: {BOXPLOTS_FILE}")
+    else:
+        print("Omisión: matplotlib/seaborn no disponibles — no se generaron boxplots.")
 
     # Observaciones y filtrado
     print("\nFiltrando: age<=100, duration>0, previous<=100")
@@ -90,17 +99,21 @@ def main() -> None:
 
     # 4.5 Errores tipográficos en categóricas
     # Graficar niveles por categoria
-    fig2, ax2 = plt.subplots(nrows=len(cols_cat), ncols=1, figsize=(10, 3 * len(cols_cat)))
-    fig2.subplots_adjust(hspace=1)
-    for i, col in enumerate(cols_cat):
-        if col in data.columns:
-            sns.countplot(x=col, data=data, ax=ax2[i])
-            ax2[i].set_title(col)
-            ax2[i].set_xticklabels(ax2[i].get_xticklabels(), rotation=30)
+    if PLOTTING_AVAILABLE:
+        fig2, ax2 = plt.subplots(nrows=len(cols_cat), ncols=1, figsize=(10, 3 * len(cols_cat)))
+        fig2.subplots_adjust(hspace=1)
+        for i, col in enumerate(cols_cat):
+            if col in data.columns:
+                sns.countplot(x=col, data=data, ax=ax2[i])
+                ax2[i].set_title(col)
+                # Rotar etiquetas de eje x de forma segura
+                ax2[i].tick_params(axis="x", rotation=30)
 
-    fig2.savefig(COUNTPLOTS_FILE)
-    plt.close(fig2)
-    print(f"Countplots guardados en: {COUNTPLOTS_FILE}")
+        fig2.savefig(COUNTPLOTS_FILE)
+        plt.close(fig2)
+        print(f"Countplots guardados en: {COUNTPLOTS_FILE}")
+    else:
+        print("Omisión: matplotlib/seaborn no disponibles — no se generaron countplots.")
 
     # Normalizar subniveles
     for column in cols_cat:

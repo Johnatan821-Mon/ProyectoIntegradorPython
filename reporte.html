@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Analisis de Perfiles de Clientes — Banco</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: #f4f6f9;
+      color: #2d3748;
+    }
+
+    /* ── HERO ── */
+    .hero {
+      background: linear-gradient(135deg, #1a365d 0%, #2b6cb0 60%, #3182ce 100%);
+      color: #fff;
+      padding: 60px 40px 50px;
+      text-align: center;
+    }
+    .hero h1 { font-size: 2.4rem; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 12px; }
+    .hero p  { font-size: 1.1rem; opacity: .85; max-width: 680px; margin: 0 auto 28px; line-height: 1.6; }
+
+    .badges { display: flex; justify-content: center; gap: 14px; flex-wrap: wrap; }
+    .badge {
+      background: rgba(255,255,255,.15);
+      border: 1px solid rgba(255,255,255,.3);
+      border-radius: 20px;
+      padding: 6px 18px;
+      font-size: .85rem;
+      font-weight: 600;
+    }
+
+    /* ── LAYOUT ── */
+    .container { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+
+    section { padding: 52px 0 20px; }
+    section:last-of-type { padding-bottom: 60px; }
+
+    .section-title {
+      font-size: 1.55rem;
+      font-weight: 700;
+      color: #1a365d;
+      border-left: 5px solid #3182ce;
+      padding-left: 14px;
+      margin-bottom: 8px;
+    }
+    .section-sub {
+      color: #718096;
+      font-size: .97rem;
+      margin-bottom: 30px;
+      padding-left: 20px;
+    }
+
+    /* ── STAT CARDS ── */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+      margin-bottom: 36px;
+    }
+    .stat-card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 24px 20px;
+      text-align: center;
+      box-shadow: 0 2px 10px rgba(0,0,0,.07);
+      border-top: 4px solid #3182ce;
+    }
+    .stat-card.green  { border-color: #38a169; }
+    .stat-card.orange { border-color: #dd6b20; }
+    .stat-card.red    { border-color: #e53e3e; }
+    .stat-card.purple { border-color: #805ad5; }
+
+    .stat-value { font-size: 2rem; font-weight: 700; color: #1a365d; line-height: 1; }
+    .stat-label { font-size: .82rem; color: #718096; margin-top: 6px; text-transform: uppercase; letter-spacing: .5px; }
+    .stat-delta { font-size: .78rem; margin-top: 8px; font-weight: 600; }
+    .delta-good { color: #38a169; }
+    .delta-bad  { color: #e53e3e; }
+
+    /* ── CLEANING TABLE ── */
+    .clean-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #fff;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 2px 10px rgba(0,0,0,.07);
+      margin-bottom: 16px;
+    }
+    .clean-table thead { background: #1a365d; color: #fff; }
+    .clean-table th, .clean-table td { padding: 13px 18px; text-align: left; font-size: .93rem; }
+    .clean-table tbody tr:nth-child(even) { background: #f7fafc; }
+    .clean-table tbody tr:hover { background: #ebf8ff; }
+    .tag {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-size: .78rem;
+      font-weight: 600;
+    }
+    .tag-blue   { background: #bee3f8; color: #2b6cb0; }
+    .tag-green  { background: #c6f6d5; color: #276749; }
+    .tag-orange { background: #feebc8; color: #c05621; }
+
+    /* ── CHART CARDS ── */
+    .chart-grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-bottom: 24px;
+    }
+    .chart-grid-1 { margin-bottom: 24px; }
+
+    .chart-card {
+      background: #fff;
+      border-radius: 14px;
+      box-shadow: 0 2px 12px rgba(0,0,0,.08);
+      overflow: hidden;
+    }
+    .chart-card-header {
+      padding: 18px 22px 12px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    .chart-card-header h3 { font-size: 1rem; font-weight: 700; color: #1a365d; }
+    .chart-card-header p  { font-size: .83rem; color: #718096; margin-top: 3px; }
+    .chart-card img {
+      width: 100%;
+      display: block;
+      padding: 12px 16px 16px;
+    }
+
+    /* ── INSIGHT BOXES ── */
+    .insights { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-top: 28px; }
+    .insight {
+      background: #fff;
+      border-radius: 10px;
+      padding: 18px 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.06);
+      border-left: 4px solid #3182ce;
+      font-size: .9rem;
+      line-height: 1.55;
+    }
+    .insight.green  { border-color: #38a169; }
+    .insight.orange { border-color: #dd6b20; }
+    .insight.purple { border-color: #805ad5; }
+    .insight strong { display: block; font-size: .95rem; color: #1a365d; margin-bottom: 4px; }
+
+    /* ── PERFIL IDEAL ── */
+    .perfil-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-top: 10px;
+    }
+    .perfil-item {
+      background: #fff;
+      border-radius: 12px;
+      padding: 22px 18px;
+      text-align: center;
+      box-shadow: 0 2px 10px rgba(0,0,0,.07);
+    }
+    .perfil-icon { font-size: 2rem; margin-bottom: 10px; }
+    .perfil-cat  { font-size: .75rem; color: #718096; text-transform: uppercase; letter-spacing: .6px; font-weight: 600; }
+    .perfil-val  { font-size: 1.1rem; font-weight: 700; color: #1a365d; margin-top: 4px; }
+    .perfil-pct  { font-size: .85rem; color: #38a169; font-weight: 600; margin-top: 2px; }
+
+    /* ── FOOTER ── */
+    footer {
+      background: #1a365d;
+      color: rgba(255,255,255,.6);
+      text-align: center;
+      padding: 24px;
+      font-size: .83rem;
+    }
+    footer span { color: rgba(255,255,255,.9); font-weight: 600; }
+
+    @media (max-width: 700px) {
+      .chart-grid-2 { grid-template-columns: 1fr; }
+      .hero h1 { font-size: 1.7rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- HERO -->
+<div class="hero">
+  <h1>Analisis de Perfiles de Clientes Bancarios</h1>
+  <p>Un banco llamo por telefono a mas de 45,000 clientes para ofrecerles abrir un <strong>deposito a termino fijo</strong>: el cliente guarda su dinero en el banco durante un periodo acordado (por ejemplo, un ano) y al finalizar recibe ese dinero de vuelta junto con una ganancia (interes). Analizamos quienes dijeron SI y que caracteristicas tienen en comun.</p>
+  <div class="badges">
+    <span class="badge">Python &amp; Pandas</span>
+    <span class="badge">Matplotlib &amp; Seaborn</span>
+    <span class="badge">45,189 registros</span>
+    <span class="badge">17 variables</span>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- 1. CONTEXTO -->
+  <section>
+    <h2 class="section-title">Contexto del Problema</h2>
+    <p class="section-sub">El banco queria responder una pregunta sencilla: de todos los clientes a los que llamamos, ¿quien tiene mas probabilidades de decir SI? Suscribirse significa que el cliente acepto abrir el deposito y firmo el contrato. Identificar ese perfil permite enfocar la proxima campana en las personas correctas, en lugar de llamar a todos por igual y desperdiciar tiempo y recursos.</p>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-value">45,215</div>
+        <div class="stat-label">Registros originales</div>
+      </div>
+      <div class="stat-card green">
+        <div class="stat-value">45,189</div>
+        <div class="stat-label">Registros limpios</div>
+        <div class="stat-delta delta-good">26 filas eliminadas</div>
+      </div>
+      <div class="stat-card orange">
+        <div class="stat-value">17</div>
+        <div class="stat-label">Variables analizadas</div>
+      </div>
+      <div class="stat-card red">
+        <div class="stat-value">11.7%</div>
+        <div class="stat-label">Tasa de conversion</div>
+        <div class="stat-delta delta-bad">Solo 1 de cada 9 dijo SI</div>
+      </div>
+      <div class="stat-card purple">
+        <div class="stat-value">5</div>
+        <div class="stat-label">Pasos de limpieza</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. LIMPIEZA -->
+  <section>
+    <h2 class="section-title">Proceso de Limpieza</h2>
+    <p class="section-sub">Antes de analizar los datos fue necesario corregir errores e inconsistencias en el archivo original: informacion faltante, registros repetidos, edades imposibles y nombres escritos de formas distintas para referirse a lo mismo. Este paso garantiza que las conclusiones sean confiables y no esten distorsionadas por datos incorrectos.</p>
+
+    <table class="clean-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Etapa</th>
+          <th>Accion</th>
+          <th>Resultado</th>
+          <th>Tipo</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>4.1</td>
+          <td>Datos faltantes</td>
+          <td><code>dropna()</code> — eliminar filas con celdas vacias</td>
+          <td>8 celdas nulas eliminadas</td>
+          <td><span class="tag tag-blue">Nulos</span></td>
+        </tr>
+        <tr>
+          <td>4.2</td>
+          <td>Columnas irrelevantes</td>
+          <td>Verificar que cada columna tenga mas de 1 nivel o valor unico</td>
+          <td>Todas las columnas preservadas</td>
+          <td><span class="tag tag-green">Estructura</span></td>
+        </tr>
+        <tr>
+          <td>4.3</td>
+          <td>Filas duplicadas</td>
+          <td><code>drop_duplicates()</code></td>
+          <td>4 filas duplicadas eliminadas</td>
+          <td><span class="tag tag-blue">Duplicados</span></td>
+        </tr>
+        <tr>
+          <td>4.4</td>
+          <td>Outliers</td>
+          <td>Filtrar: age &gt; 100, duration &lt; 0, previous &gt; 100</td>
+          <td>14 registros anomalos eliminados</td>
+          <td><span class="tag tag-orange">Outliers</span></td>
+        </tr>
+        <tr>
+          <td>4.5</td>
+          <td>Errores tipograficos</td>
+          <td>Unificar: admin./administrative, div./divorced, sec./secondary, phone/telephone, unk/unknown</td>
+          <td>Niveles reducidos: job 18→12, marital 6→3, contact 5→3</td>
+          <td><span class="tag tag-orange">Categoricas</span></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Grafica comparacion datasets -->
+    <div class="chart-grid-1">
+      <div class="chart-card">
+        <div class="chart-card-header">
+          <h3>Comparacion: Dataset Original vs Limpio</h3>
+          <p>Total de registros (filas), celdas sin informacion (nulos) y registros repetidos antes y despues de la limpieza. Cuanto mas parecidas sean las barras, menos errores habia en los datos originales.</p>
+        </div>
+        <img src="graficas/01_comparacion_datasets.png" alt="Comparacion datasets" />
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. CONVERSION GLOBAL -->
+  <section>
+    <h2 class="section-title">Tasa de Conversion Global</h2>
+    <p class="section-sub">De cada 100 personas a las que el banco llamo, solo 11 terminaron abriendo el deposito. Eso significa que el 88.3% de las llamadas no resultaron en una suscripcion. Por eso es tan importante saber a quien llamar: no tiene sentido invertir el mismo esfuerzo en todos si algunos perfiles casi nunca dicen SI.</p>
+
+    <div class="chart-grid-2">
+      <div class="chart-card">
+        <div class="chart-card-header">
+          <h3>Distribucion SI / NO</h3>
+          <p>Proporcion de clientes que abrieron el deposito (SI, verde) versus los que rechazaron la oferta (NO, rojo). La diferencia es enorme: hay casi 8 veces mas rechazos que aceptaciones.</p>
+        </div>
+        <img src="graficas/02_conversion_global.png" alt="Conversion global" />
+      </div>
+      <div class="chart-card">
+        <div class="chart-card-header">
+          <h3>Conversion por Tipo de Trabajo</h3>
+          <p>De cada 100 clientes contactados segun su ocupacion, cuantos terminaron abriendo el deposito. Las barras mas altas indican los trabajos donde el banco tuvo mas exito.</p>
+        </div>
+        <img src="graficas/03_conversion_por_trabajo.png" alt="Conversion por trabajo" />
+      </div>
+    </div>
+
+    <div class="insights">
+      <div class="insight">
+        <strong>Estudiantes lideran la conversion</strong>
+        Con un 28.7%, casi 1 de cada 3 estudiantes contactados dijo SI. Son pocos en total, pero su receptividad es muy alta: probablemente ven el deposito como una forma sencilla y segura de comenzar a ahorrar por primera vez.
+      </div>
+      <div class="insight green">
+        <strong>Jubilados: segundo lugar</strong>
+        El 22.8% de los jubilados suscribio. Al estar retirados, suelen tener dinero disponible que ya no necesitan para gastos diarios, y buscan productos seguros que les generen una ganancia extra sin arriesgar su capital.
+      </div>
+      <div class="insight orange">
+        <strong>Obreros (blue-collar): los menos propensos</strong>
+        Solo el 7.3% suscribio. Este grupo suele tener ingresos mas ajustados y menos margen para dejar su dinero inmovilizado en un deposito durante meses, ya que lo necesitan para cubrir gastos del dia a dia.
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. EDAD -->
+  <section>
+    <h2 class="section-title">Analisis por Grupo de Edad</h2>
+    <p class="section-sub">La edad revela un patron muy claro: los mas jovenes y los mas mayores dicen SI con mucha mas frecuencia que las personas en plena vida laboral (35 a 55 anos). Curiosamente, el grupo que mas llaman (35-55) es justo el que menos acepta. Esto sugiere que la etapa de vida influye directamente en la disposicion a ahorrar de esta forma.</p>
+
+    <div class="chart-grid-1">
+      <div class="chart-card">
+        <div class="chart-card-header">
+          <h3>Volumen de Clientes y Tasa de Conversion por Grupo de Edad</h3>
+          <p>El grafico de la izquierda muestra cuantas personas de cada grupo de edad fueron contactadas. El de la derecha muestra que porcentaje de cada grupo termino suscribiendose. Comparar ambos revela que llamar a mas personas de un grupo no significa obtener mas suscripciones.</p>
+        </div>
+        <img src="graficas/04_analisis_por_edad.png" alt="Analisis por edad" />
+      </div>
+    </div>
+
+    <div class="insights">
+      <div class="insight purple">
+        <strong>Mayores de 65: 42% de conversion</strong>
+        Casi 1 de cada 2 personas de este grupo dijo SI. Son personas que han ahorrado a lo largo de su vida, ya no tienen gastos grandes como hipotecas o hijos que mantener, y valoran recibir una ganancia fija y segura sobre el dinero que tienen guardado.
+      </div>
+      <div class="insight">
+        <strong>Menores de 25: 25.6%</strong>
+        El segundo grupo mas receptivo. Muchos son estudiantes que reciben apoyo familiar y ven el deposito a termino como su primer producto de ahorro: una manera de hacer rendir un dinero que de otra forma estaria parado en la cuenta sin generar nada.
+      </div>
+      <div class="insight orange">
+        <strong>Rango 35-55: mucho esfuerzo, poco resultado</strong>
+        Este grupo representa el 54% de todas las llamadas, pero solo 1 de cada 10 acepta. En esta etapa las personas suelen tener hipotecas, hijos, gastos de educacion y obligaciones financieras que les impiden dejar su dinero bloqueado por un periodo largo.
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. DURACION Y CAMPANA ANTERIOR -->
+  <section>
+    <h2 class="section-title">Duracion del Contacto y Campana Anterior</h2>
+    <p class="section-sub">Dos senales muy claras predicen si un cliente va a decir SI: cuanto tiempo dura la llamada telefonica y si ese mismo cliente ya habia aceptado una oferta similar del banco en el pasado. Ambos factores son de los mas poderosos que encontramos en todo el analisis.</p>
+
+    <div class="chart-grid-2">
+      <div class="chart-card">
+        <div class="chart-card-header">
+          <h3>Duracion de la Llamada vs Conversion</h3>
+          <p>El histograma (izquierda) muestra cuanto duran las llamadas en minutos segun si el cliente dijo SI o NO. La barra (derecha) compara el tiempo promedio de cada grupo. Una llamada larga indica que el cliente esta escuchando, haciendo preguntas y considerando la oferta.</p>
+        </div>
+        <img src="graficas/07_duracion_vs_conversion.png" alt="Duracion vs conversion" />
+      </div>
+      <div class="chart-card">
+        <div class="chart-card-header">
+          <h3>Resultado de la Campana Anterior</h3>
+          <p>Muestra cuantos clientes suscribieron en la campana actual segun lo que habia pasado cuando el banco los llamo por primera vez en el pasado. "Success" significa que ya habian dicho SI antes; "failure" que dijeron NO; "unknown" que no habia registro previo.</p>
+        </div>
+        <img src="graficas/08_poutcome_vs_conversion.png" alt="Resultado campana anterior" />
+      </div>
+    </div>
+
+    <div class="insights">
+      <div class="insight green">
+        <strong>Llamadas largas = mayor interes: 8.9 min (SI) vs 3.7 min (NO)</strong>
+        Quienes terminaron suscribiendose hablaron en promedio mas del doble de tiempo que quienes rechazaron. Esto no significa que hablar mas convenza al cliente, sino que si el cliente ya tiene interes, naturalmente hace preguntas y la llamada se extiende. Es una senal util para el agente en tiempo real.
+      </div>
+      <div class="insight purple">
+        <strong>Ya dijo SI antes = 64.7% de conversion</strong>
+        Si el banco ya le habia ofrecido este producto en el pasado y el cliente habia aceptado, la probabilidad de que vuelva a suscribirse es de casi 2 de cada 3. Estos clientes ya conocen el producto, confian en el y saben que les funciona. Son la prioridad numero uno de cualquier campana nueva.
+      </div>
+    </div>
+  </section>
+
+  <!-- 6. HEATMAP -->
+  <section>
+    <h2 class="section-title">Combinacion Trabajo + Educacion</h2>
+    <p class="section-sub">Saber solo el trabajo o solo el nivel de estudios de un cliente no es suficiente: la combinacion de ambos revela perfiles mucho mas precisos. Por ejemplo, no es lo mismo un estudiante con estudios universitarios que uno con estudios primarios; su situacion economica y sus habitos financieros pueden ser completamente distintos.</p>
+
+    <div class="chart-grid-1">
+      <div class="chart-card">
+        <div class="chart-card-header">
+          <h3>Mapa de Calor: Tasa de Conversion (%) por Trabajo y Nivel Educativo</h3>
+          <p>Cada celda representa una combinacion de ocupacion (filas) y nivel de estudios (columnas), y muestra que porcentaje de ese grupo especifico suscribio. Cuanto mas oscura la celda, mayor fue la tasa de conversion en esa combinacion. Las celdas en blanco o muy claras indican grupos con muy baja conversion o pocos datos.</p>
+        </div>
+        <img src="graficas/09_heatmap_trabajo_educacion.png" alt="Heatmap trabajo y educacion" />
+      </div>
+    </div>
+
+    <div class="insights">
+      <div class="insight">
+        <strong>Estudiante + Estudios primarios: 36.4%</strong>
+        La combinacion con la tasa de conversion mas alta de todo el dataset. Puede parecer sorprendente, pero estos estudiantes con menor nivel educativo formal probablemente tienen pocas obligaciones financieras, reciben dinero de sus familias y ven el deposito como una forma sencilla de guardarlo con ganancia.
+      </div>
+      <div class="insight green">
+        <strong>Jubilado + Estudios universitarios: 27.6%</strong>
+        Los jubilados con educacion superior entienden bien como funcionan los productos financieros, saben calcular el beneficio que ofrece un deposito y ademas tienen el dinero disponible para hacerlo. Es una combinacion ideal para el banco.
+      </div>
+      <div class="insight orange">
+        <strong>Directivo + Educacion desconocida: 19.8%</strong>
+        Los gerentes y directivos con datos educativos incompletos en el registro aun asi convierten bien. Este grupo suele tener ingresos altos y tomar decisiones financieras con autonomia, lo que los hace receptivos incluso si no tenemos toda su informacion.
+      </div>
+    </div>
+  </section>
+
+  <!-- 7. PERFIL IDEAL -->
+  <section>
+    <h2 class="section-title">Perfil del Cliente con Mayor Potencial</h2>
+    <p class="section-sub">Combinando todo lo que encontramos, este es el tipo de cliente al que tiene mas sentido llamar primero en la proxima campana. No significa que los demas no puedan suscribirse, sino que estas caracteristicas se repiten con mayor frecuencia entre quienes dijeron SI. Cuantos mas de estos rasgos tenga un cliente, mayor es su probabilidad de aceptar.</p>
+
+    <div class="perfil-grid">
+      <div class="perfil-item">
+        <div class="perfil-icon">&#x1F4BC;</div>
+        <div class="perfil-cat">Ocupacion</div>
+        <div class="perfil-val">Student / Retired</div>
+        <div class="perfil-pct">28.7% — 22.8%</div>
+      </div>
+      <div class="perfil-item">
+        <div class="perfil-icon">&#x1F4C5;</div>
+        <div class="perfil-cat">Grupo de edad</div>
+        <div class="perfil-val">65+ anos</div>
+        <div class="perfil-pct">42.0% conversion</div>
+      </div>
+      <div class="perfil-item">
+        <div class="perfil-icon">&#x1F393;</div>
+        <div class="perfil-cat">Educacion</div>
+        <div class="perfil-val">Universitario</div>
+        <div class="perfil-pct">15.0% conversion</div>
+      </div>
+      <div class="perfil-item">
+        <div class="perfil-icon">&#x1F48D;</div>
+        <div class="perfil-cat">Estado civil</div>
+        <div class="perfil-val">Soltero/a</div>
+        <div class="perfil-pct">14.9% conversion</div>
+      </div>
+      <div class="perfil-item">
+        <div class="perfil-icon">&#x1F4F1;</div>
+        <div class="perfil-cat">Canal de contacto</div>
+        <div class="perfil-val">Celular</div>
+        <div class="perfil-pct">14.9% conversion</div>
+      </div>
+      <div class="perfil-item">
+        <div class="perfil-icon">&#x2705;</div>
+        <div class="perfil-cat">Campana anterior</div>
+        <div class="perfil-val">Ya dijo SI antes</div>
+        <div class="perfil-pct">64.7% conversion</div>
+      </div>
+    </div>
+  </section>
+
+</div><!-- /container -->
+
+<footer>
+  Elaborado con <span>Python · Pandas · Matplotlib · Seaborn</span> &nbsp;|&nbsp; Dataset: campana de marketing bancario &nbsp;|&nbsp; 2026
+</footer>
+
+</body>
+</html>
